@@ -1,0 +1,215 @@
+---
+
+fuzzer:
+  iterations: 0
+  random-order: true
+  runstatedir: "/tmp/frr-cli-fuzzer"
+
+frr-build-parameters:
+  # FRR's sysconfdir (--sysconfdir).
+  sysconfdir: "/etc/frr"
+
+  # FRR's localstatedir (--localstatedir).
+  localstatedir: "/var/run/frr"
+
+  # FRR's user (--enable-user).
+  user: "frr"
+
+  # FRR's group (--enable-group).
+  group: "frr"
+
+daemons:
+  - zebra
+  - bgpd
+  - ospfd
+  - ospf6d
+  - isisd
+  - fabricd
+  - ripd
+  - ripngd
+  - eigrpd
+  - pimd
+  - ldpd
+  - nhrpd
+  - babeld
+  #- bfdd
+  - pbrd
+  - staticd
+  - sharpd
+
+regexps:
+  A.B.C.D/M: "1.1.1.1/32"
+  A.B.C.D: "1.1.1.1"
+  X:X::X:X/M: "2001:db8::1/128"
+  X:X::X:X: "2001:db8::1"
+  INTERFACE: "eth99"
+  IFNAME: "eth99"
+  AA:BB:CC...: "1:1:1 2:2:2"
+  AA:BB:CC: "1:1:1"
+  AA:NN...: "1:1 2:2"
+  AA:NN: "1:1"
+  ASN:nn_or_IP-address:nn: "1:1"
+  ASN:NN_OR_IP-ADDRESS:NN: "1:1"
+  RTLIST...: "1:1 2:2"
+  YY:YY:YY:YY:YY:YY: "11:11:11:11:11:11"
+  MAC: "11:11:11:11:11:11"
+  M:A:C: "11:11:11:11:11:11"
+  M:A:C/M: "11:11:11:11:11:11/48"
+  HH:MM:SS: "10:10:10"
+  MONTH: "January"
+  BANDWIDTH: "1000"
+  PERCENTAGE: "50"
+
+whitelist:
+  #- ^show (ip|ipv6)
+  #- redistribute
+
+blacklist:
+  - output file
+  - ^write
+  - ^copy
+  - ^list
+  - ^find
+  - ^exit
+  - ^quit
+  - ^end
+  - ^(no )?(ip|ipv6) route
+  - ^show (ip|ipv6) (route|fib)
+  - ^no router bgp
+  - ^no neighbor (A.B.C.D|X:X::X:X|WORD)$
+  - ^no neighbor (A.B.C.D|X:X::X:X|WORD) remote-as
+  #- ospf
+  #- ^(no )?debug
+
+nodes:
+  - ""
+  - -c "configure terminal"
+  - -c "configure terminal" -c "interface eth99"
+  - -c "configure terminal" -c "interface eth99" -c "link-params"
+  - -c "configure terminal" -c "route-map RMAP permit 1"
+  - -c "configure terminal" -c "router bgp 1"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 unicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 multicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 vpn"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 labeled-unicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 flowspec"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 unicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 multicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 vpn"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 labeled-unicast"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 flowspec"
+  - -c "configure terminal" -c "router bgp 1" -c "address-family l2vpn evpn"
+  - -c "configure terminal" -c "router bgp 1" -c "vnc defaults"
+  - -c "configure terminal" -c "router bgp 1" -c "vnc nve-group NAME"
+  - -c "configure terminal" -c "router bgp 1" -c "vnc l2-group NAME"
+  - -c "configure terminal" -c "router bgp 1" -c "vrf-policy NAME"
+  - -c "configure terminal" -c "key chain WORD"
+  - -c "configure terminal" -c "key chain WORD" -c "key 255"
+  - -c "configure terminal" -c "router babel"
+  - -c "configure terminal" -c "router ospf"
+  - -c "configure terminal" -c "router ospf6"
+  - -c "configure terminal" -c "router isis 1"
+  - -c "configure terminal" -c "router openfabric 1"
+  - -c "configure terminal" -c "router rip"
+  - -c "configure terminal" -c "router ripng"
+  - -c "configure terminal" -c "router eigrp 1"
+  - -c "configure terminal" -c "mpls ldp"
+  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv4"
+  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv4" -c "interface eth99"
+  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv6"
+  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv6" -c "interface eth99"
+  - -c "configure terminal" -c "l2vpn WORD type vpls"
+  - -c "configure terminal" -c "l2vpn WORD type vpls" -c "member pseudowire mpw0"
+  - -c "configure terminal" -c "line vty"
+  - -c "configure terminal" -c "logical-router 1 ns /var/run/netns/ns1"
+  - -c "configure terminal" -c "vrf RED"
+  - -c "configure terminal" -c "nexthop-group NHGROUP"
+  - -c "configure terminal" -c "pbr-map WORD seq 100"
+  #- -c "configure terminal" -c "bfd"
+  #- -c "configure terminal" -c "bfd" -c "peer 1.1.1.1"
+
+configs:
+  all: |
+    hostname %(daemon)
+    log file %(runstatedir)/%(daemon).log
+    log commands
+    !
+    debug northbound
+    !
+  zebra: |
+    route-map WORD permit 10
+    vrf WORD
+    !
+  bgpd: |
+    route-map WORD permit 10
+    ip prefix-list WORD permit any
+    access-list WORD permit any
+    !
+    router bgp 1
+     neighbor 1.1.1.1 remote-as 1
+     neighbor 2001:db8::1 remote-as 1
+     neighbor WORD peer-group
+     neighbor WORD remote-as 1
+     !
+     address-family ipv6 unicast
+      neighbor 1.1.1.1 activate
+      neighbor 2001:db8::1 activate
+      neighbor WORD activate
+     exit-address-family
+     !
+    !
+    router bgp 2 view VIEWVRFNAME
+    !
+  ospfd: |
+    route-map WORD permit 10
+    !
+    router ospf
+    !
+  ospf6d: |
+    route-map WORD permit 10
+    !
+    router ospf6
+    !
+  isisd: |
+    route-map WORD permit 10
+    !
+  fabricd: |
+    route-map WORD permit 10
+    !
+  ripd: |
+    route-map WORD permit 10
+    ip prefix-list WORD permit any
+    access-list WORD permit any
+    !
+    !key chain WORD
+    ! key 2147483647
+    !
+    router rip
+     distribute-list WORD in eth99
+    !
+  ripngd: |
+    route-map WORD permit 10
+    ipv6 prefix-list WORD permit any
+    ipv6 access-list WORD permit any
+    !
+    router ripng
+     distribute-list WORD in eth99
+    !
+  eigrpd: |
+    route-map WORD permit 10
+    !
+  pimd: |
+    route-map WORD permit 10
+    vrf WORD
+    !
+  ldpd: |
+  nhrpd: |
+  babeld: |
+  bfdd: |
+  pbrd: |
+  staticd: |
+    vrf WORD
+    !
+  sharpd: |
+    route-map WORD permit 10
+    !

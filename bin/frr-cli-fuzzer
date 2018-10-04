@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+$VERBOSE = true
+
+require 'yaml'
+require_relative '../lib/frr-cli-fuzzer.rb'
+
+# Signal handler.
+trap('INT') do
+  FrrCliFuzzer.print_results
+  exit(0)
+end
+
+# Parse command-line options.
+if ARGV.size != 1
+  puts "Usage: #{File.basename(__FILE__)} config.yml"
+  exit(1)
+end
+config_file = ARGV[0]
+
+# Read configuration file.
+begin
+  config = YAML.load_file(config_file)
+rescue SystemCallError, Psych::SyntaxError, ArgumentError => e
+  warn e.message
+  warn e.backtrace
+  exit(1)
+end
+
+FrrCliFuzzer::LibC.prctl(FrrCliFuzzer::LibC::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0)
+
+# Start fuzzer and print the results when we're done.
+FrrCliFuzzer.init(iterations: config.dig('fuzzer', 'iterations'),
+                  random_order: config.dig('fuzzer', 'random-order'),
+                  runstatedir: config.dig('fuzzer', 'runstatedir'),
+                  frr_build_parameters: config['frr-build-parameters'],
+                  daemons: config['daemons'],
+                  configs: config['configs'],
+                  nodes: config['nodes'],
+                  regexps: config['regexps'],
+                  whitelist: config['whitelist'],
+                  blacklist: config['blacklist'])
+FrrCliFuzzer.gen_configs
+FrrCliFuzzer.start_daemons
+FrrCliFuzzer.test_fuzzing
+FrrCliFuzzer.print_results
