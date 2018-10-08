@@ -73,11 +73,13 @@ blacklist:
   - ^exit
   - ^quit
   - ^end
+  - ^(no )?log
   - ^(no )?(ip|ipv6) route
   - ^show (ip|ipv6) (route|fib)
   - ^no router bgp
   - ^no neighbor (A.B.C.D|X:X::X:X|WORD)$
   - ^no neighbor (A.B.C.D|X:X::X:X|WORD) remote-as
+  - ^sharp install
   #- ospf
   #- ^(no )?debug
 
