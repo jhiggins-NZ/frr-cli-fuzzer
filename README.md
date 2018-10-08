@@ -43,7 +43,7 @@ results:
 ```
 
 The `runstatedir` (_/tmp/frr-cli-fuzzer/_ by default) directory will contain the following files:
-* _output.txt_: log of the detected segmentation faults (use `sort output.txt | uniq` to filter out duplicates).
+* _segfaults.txt_: log of the detected segmentation faults (use `sort segfaults.txt | uniq` to filter out duplicates).
 * _vtysh.txt_: vtysh output.
 * _*.log_: log files of the FRR daemons.
 * _*.stdout_: capture of the standard output of the FRR daemons.

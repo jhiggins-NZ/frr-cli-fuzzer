@@ -236,7 +236,7 @@ module FrrCliFuzzer
     def log_segfault(daemon, command)
       msg = "#{daemon} aborted: #{command}"
       puts msg
-      File.open("#{@runstatedir}/output.txt", 'a') { |f| f.puts msg }
+      File.open("#{@runstatedir}/segfaults.txt", 'a') { |f| f.puts msg }
 
       @counters['segfaults'] += 1
       @segfaults[msg] = @segfaults[msg].to_i + 1
