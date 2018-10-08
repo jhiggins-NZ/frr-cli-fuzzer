@@ -4,7 +4,7 @@ The FRR CLI fuzzer works by executing all existing CLI commands (obtained using 
 
 This program receives as input a configuration file specifying the test parameters, which are mostly self explanatory. The [config.yml](config.yml) file can be used as a reference configuration.
 
-The CLI fuzzer uses PID, mount and network namespaces to run on a completely isolated environment, which allows multiple instances of the CLI fuzzer to run concurrently.
+The CLI fuzzer uses Linux PID, mount and network namespaces to run on a completely isolated environment, which allows multiple instances of the CLI fuzzer to run concurrently. Linux is the only supported platform.
 
 ## Installation
 
@@ -24,7 +24,7 @@ Alternatively, install the latest version of the _frr-cli-fuzzer_ gem using the 
 
 ## Usage
 
-Edit _config.yml_ to configure the test parameters. Run the CLI fuzzer using the following command:
+Edit [config.yml](config.yml) to configure the test parameters. Run the CLI fuzzer using the following command:
 ```
 # frr-cli-fuzzer config.yml
 ```
@@ -50,6 +50,9 @@ The `runstatedir` (_/tmp/frr-cli-fuzzer/_ by default) directory will contain the
 * _*.stderr_: capture of the standard error of the FRR daemons.
 
 It's recommend to build FRR with compiler optimizations (e.g. `-O2`) to allow the CLI fuzzer to test more commands per second.
+
+If desired, it's possible to run multiple instances of the CLI fuzzer at the same time.
+For that, each instance must use a different configuration file, and the `runstatedir` parameter (under the `fuzzer` section) must be different among all running instances to separate their running state data.
 
 ## Core Dumps
 
