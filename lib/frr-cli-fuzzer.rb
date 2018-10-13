@@ -71,19 +71,13 @@ module FrrCliFuzzer
       mount(@frr['localstatedir'], @frr['user'], @frr['group'])
     end
 
-    # nsenter(1) is a standard tool from the util-linux package. It can be used
-    # to run a program with namespaces of other processes.
-    def nsenter
-      "nsenter -t #{@ns.pid} --mount --pid --net"
-    end
-
     # Bind mount a path under the configured runstatedir.
     def mount(path, user, group)
       source = "#{@runstatedir}/#{path}"
       FileUtils.mkdir_p(path)
       FileUtils.mkdir_p(source)
       FileUtils.chown_R(user, group, source)
-      system("#{nsenter} mount --bind #{source} #{path}")
+      system("#{@ns.nsenter} mount --bind #{source} #{path}")
     end
 
     # Save configuration in the file system.
@@ -118,7 +112,7 @@ module FrrCliFuzzer
       FileUtils.rm_f("#{@runstatedir}/#{@frr['localstatedir']}/#{daemon}.pid")
 
       # Spawn new process.
-      pid = Process.spawn("#{nsenter} #{daemon} -d --log=stdout "\
+      pid = Process.spawn("#{@ns.nsenter} #{daemon} -d --log=stdout "\
                           ">> #{@runstatedir}/#{daemon}.stdout "\
                           "2>> #{@runstatedir}/#{daemon}.stderr")
       Process.detach(pid)
@@ -133,7 +127,7 @@ module FrrCliFuzzer
 
     # Check if a FRR daemon is still alive.
     def daemon_alive?(daemon)
-      `#{nsenter} ps aux | grep #{daemon} | grep -E -v "defunct|grep"` != ''
+      `#{@ns.nsenter} ps aux | grep #{daemon} | grep -E -v "defunct|grep"` != ''
     end
 
     # Check if a command should be white-list filtered.
@@ -184,7 +178,7 @@ module FrrCliFuzzer
       commands = []
 
       @nodes.each do |hierarchy|
-        permutations = `#{nsenter} vtysh #{hierarchy} -c \"list permutations\"`
+        permutations = `#{@ns.nsenter} vtysh #{hierarchy} -c \"list permutations\"`
         permutations.each_line do |command|
           command = command.strip
 
@@ -216,7 +210,7 @@ module FrrCliFuzzer
 
       vtysh_log = "#{@runstatedir}/vtysh.txt"
       File.open(vtysh_log, 'a') { |f| f.puts command }
-      system("#{nsenter} #{command} >> #{vtysh_log} 2>&1")
+      system("#{@ns.nsenter} #{command} >> #{vtysh_log} 2>&1")
     end
 
     # Print the results of the fuzzing tests.

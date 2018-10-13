@@ -1,7 +1,5 @@
 module FrrCliFuzzer
   class LinuxNamespace
-    attr_accessor :pid
-
     # Create a child process running on a separate network and mount namespace.
     def fork_and_unshare
       begin
@@ -50,6 +48,12 @@ module FrrCliFuzzer
       mount('none', '/proc', nil, LibC::MS_REC | LibC::MS_PRIVATE, nil)
       mount('proc', '/proc', 'proc',
             LibC::MS_NOSUID | LibC::MS_NOEXEC | LibC::MS_NODEV, nil)
+    end
+
+    # nsenter(1) is a standard tool from the util-linux package. It can be used
+    # to run a program with namespaces of other processes.
+    def nsenter
+      "nsenter -t #{@pid} --mount --pid --net"
     end
 
     # Wrapper for mount(2).
