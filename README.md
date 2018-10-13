@@ -44,10 +44,11 @@ results:
 
 The `runstatedir` (_/tmp/frr-cli-fuzzer/_ by default) directory will contain the following files:
 * _segfaults.txt_: log of the detected segmentation faults (use `sort segfaults.txt | uniq` to filter out duplicates).
-* _vtysh.txt_: vtysh output.
 * _*.log_: log files of the FRR daemons.
 * _*.stdout_: capture of the standard output of the FRR daemons.
 * _*.stderr_: capture of the standard error of the FRR daemons.
+* _vtysh.stdout_: capture of the standard output of vtysh.
+* _vtysh.stderr_: capture of the standard error of vtysh.
 
 It's recommend to build FRR with compiler optimizations (e.g. `-O2`) to allow the CLI fuzzer to test more commands per second.
 

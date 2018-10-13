@@ -112,9 +112,9 @@ module FrrCliFuzzer
       FileUtils.rm_f("#{@runstatedir}/#{@frr['localstatedir']}/#{daemon}.pid")
 
       # Spawn new process.
-      pid = Process.spawn("#{@ns.nsenter} #{daemon} -d --log=stdout "\
-                          ">> #{@runstatedir}/#{daemon}.stdout "\
-                          "2>> #{@runstatedir}/#{daemon}.stderr")
+      pid = Process.spawn("#{@ns.nsenter} #{daemon} --log=stdout",
+                          out: "#{@runstatedir}/#{daemon}.stdout",
+                          err: "#{@runstatedir}/#{daemon}.stderr")
       Process.detach(pid)
     end
 
@@ -208,9 +208,10 @@ module FrrCliFuzzer
     def send_command(command)
       puts "testing: #{command}"
 
-      vtysh_log = "#{@runstatedir}/vtysh.txt"
-      File.open(vtysh_log, 'a') { |f| f.puts command }
-      system("#{@ns.nsenter} #{command} >> #{vtysh_log} 2>&1")
+      File.open("#{@runstatedir}/vtysh.stdout", 'a') { |f| f.puts command }
+      Kernel.system("#{@ns.nsenter} #{command}",
+                    out: ["#{@runstatedir}/vtysh.stdout", "a"],
+                    err: ["#{@runstatedir}/vtysh.stderr", "a"])
     end
 
     # Print the results of the fuzzing tests.
