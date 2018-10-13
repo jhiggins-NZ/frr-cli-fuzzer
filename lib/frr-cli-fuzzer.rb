@@ -67,12 +67,12 @@ module FrrCliFuzzer
       end
 
       # Bind mount FRR directories.
-      mount(@frr['sysconfdir'], @frr['user'], @frr['group'])
-      mount(@frr['localstatedir'], @frr['user'], @frr['group'])
+      bind_mount(@frr['sysconfdir'], @frr['user'], @frr['group'])
+      bind_mount(@frr['localstatedir'], @frr['user'], @frr['group'])
     end
 
     # Bind mount a path under the configured runstatedir.
-    def mount(path, user, group)
+    def bind_mount(path, user, group)
       source = "#{@runstatedir}/#{path}"
       FileUtils.mkdir_p(path)
       FileUtils.mkdir_p(source)
