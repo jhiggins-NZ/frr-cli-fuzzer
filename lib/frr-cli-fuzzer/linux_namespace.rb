@@ -5,8 +5,10 @@ module FrrCliFuzzer
       begin
         io_in, io_out = IO.pipe
 
+        LibC.prctl(FrrCliFuzzer::LibC::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0)
+
         pid = Kernel.fork do
-          unshare(LibC::CLONE_NEWNS | LibC::CLONE_NEWPID | LibC::CLONE_NEWNET)
+          LibC.unshare(LibC::CLONE_NEWNS | LibC::CLONE_NEWPID | LibC::CLONE_NEWNET)
 
           # Fork again to use the new PID namespace.
           # Need to supress a warning that is irrelevant for us.
@@ -40,34 +42,20 @@ module FrrCliFuzzer
 
     # Set the mount propagation of the process.
     def mount_propagation(flags)
-      mount('none', '/', nil, flags, nil)
+      LibC.mount('none', '/', nil, flags, nil)
     end
 
     # Mount the proc filesystem (useful after creating a new PID namespace).
     def mount_proc
-      mount('none', '/proc', nil, LibC::MS_REC | LibC::MS_PRIVATE, nil)
-      mount('proc', '/proc', 'proc',
-            LibC::MS_NOSUID | LibC::MS_NOEXEC | LibC::MS_NODEV, nil)
+      LibC.mount('none', '/proc', nil, LibC::MS_REC | LibC::MS_PRIVATE, nil)
+      LibC.mount('proc', '/proc', 'proc',
+                 LibC::MS_NOSUID | LibC::MS_NOEXEC | LibC::MS_NODEV, nil)
     end
 
     # nsenter(1) is a standard tool from the util-linux package. It can be used
     # to run a program with namespaces of other processes.
     def nsenter
       "nsenter -t #{@pid} --mount --pid --net"
-    end
-
-    # Wrapper for mount(2).
-    def mount(source, target, fs_type, flags, data)
-      if LibC.mount(source, target, fs_type, flags, data) < 0
-        raise SystemCallError.new('mount failed', FFI::LastError.error)
-      end
-    end
-
-    # Wrapper for unshare(2).
-    def unshare(flags)
-      if LibC.unshare(flags) < 0
-        raise SystemCallError.new('unshare failed', FFI::LastError.error)
-      end
     end
   end
 end

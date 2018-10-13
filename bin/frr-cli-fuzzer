@@ -26,8 +26,6 @@ rescue SystemCallError, Psych::SyntaxError, ArgumentError => e
   exit(1)
 end
 
-FrrCliFuzzer::LibC.prctl(FrrCliFuzzer::LibC::PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0)
-
 # Start fuzzer and print the results when we're done.
 FrrCliFuzzer.init(iterations: config.dig('fuzzer', 'iterations'),
                   random_order: config.dig('fuzzer', 'random-order'),
