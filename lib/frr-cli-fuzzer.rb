@@ -1,16 +1,16 @@
-require 'fileutils'
-require 'scanf'
-require_relative 'frr-cli-fuzzer/libc'
-require_relative 'frr-cli-fuzzer/linux_namespace'
-require_relative 'frr-cli-fuzzer/version'
+require "fileutils"
+require "scanf"
+require_relative "frr-cli-fuzzer/libc"
+require_relative "frr-cli-fuzzer/linux_namespace"
+require_relative "frr-cli-fuzzer/version"
 
 module FrrCliFuzzer
   DFLT_ITERATIONS = 1
-  DFLT_RUNSTATEDIR = '/tmp/frr-cli-fuzzer'
-  DFLT_FRR_SYSCONFDIR = '/etc/frr'
-  DFLT_FRR_LOCALSTATE_DIR = '/var/run/frr'
-  DFLT_FRR_USER = 'frr'
-  DFLT_FRR_GROUP = 'frr'
+  DFLT_RUNSTATEDIR = "/tmp/frr-cli-fuzzer"
+  DFLT_FRR_SYSCONFDIR = "/etc/frr"
+  DFLT_FRR_LOCALSTATE_DIR = "/var/run/frr"
+  DFLT_FRR_USER = "frr"
+  DFLT_FRR_GROUP = "frr"
 
   class << self
     def init(iterations: nil,
@@ -28,10 +28,10 @@ module FrrCliFuzzer
       @random_order = random_order || false
       @runstatedir = runstatedir || DFLT_RUNSTATEDIR
       @frr = frr_build_parameters || []
-      @frr['sysconfdir'] ||= DFLT_FRR_SYSCONFDIR
-      @frr['localstatedir'] ||= DFLT_FRR_LOCALSTATE_DIR
-      @frr['user'] ||= DFLT_FRR_USER
-      @frr['group'] ||= DFLT_FRR_GROUP
+      @frr["sysconfdir"] ||= DFLT_FRR_SYSCONFDIR
+      @frr["localstatedir"] ||= DFLT_FRR_LOCALSTATE_DIR
+      @frr["user"] ||= DFLT_FRR_USER
+      @frr["group"] ||= DFLT_FRR_GROUP
       @daemons = daemons || []
       @configs = configs || []
       @nodes = nodes || []
@@ -41,21 +41,21 @@ module FrrCliFuzzer
 
       # Initialize counters.
       @counters = {}
-      @counters['non-filtered-cmds'] = 0
-      @counters['filtered-blacklist'] = 0
-      @counters['filtered-whitelist'] = 0
-      @counters['tested-cmds'] = 0
-      @counters['segfaults'] = 0
+      @counters["non-filtered-cmds"] = 0
+      @counters["filtered-blacklist"] = 0
+      @counters["filtered-whitelist"] = 0
+      @counters["tested-cmds"] = 0
+      @counters["segfaults"] = 0
       @segfaults = {}
 
       # Security check to prevent accidental deletion of data.
-      unless @runstatedir.include?('frr-cli-fuzzer')
+      unless @runstatedir.include?("frr-cli-fuzzer")
         abort("The runstatedir configuration parameter must contain "\
-              "'frr-cli-fuzzer' somewhere in the path.")
+              "\"frr-cli-fuzzer\" somewhere in the path.")
       end
       FileUtils.rm_rf(@runstatedir)
       FileUtils.mkdir_p(@runstatedir)
-      FileUtils.chown_R(@frr['user'], @frr['group'], @runstatedir)
+      FileUtils.chown_R(@frr["user"], @frr["group"], @runstatedir)
 
       # Create a new process on a new pid, mount and network namespace.
       @ns = LinuxNamespace.new
@@ -67,8 +67,8 @@ module FrrCliFuzzer
       end
 
       # Bind mount FRR directories.
-      bind_mount(@frr['sysconfdir'], @frr['user'], @frr['group'])
-      bind_mount(@frr['localstatedir'], @frr['user'], @frr['group'])
+      bind_mount(@frr["sysconfdir"], @frr["user"], @frr["group"])
+      bind_mount(@frr["localstatedir"], @frr["user"], @frr["group"])
     end
 
     # Bind mount a path under the configured runstatedir.
@@ -83,24 +83,24 @@ module FrrCliFuzzer
     # Save configuration in the file system.
     def save_config(daemon, config)
       path = "#{@runstatedir}/#{@frr['sysconfdir']}/#{daemon}.conf"
-      File.open(path, 'w') { |file| file.write(config) }
+      File.open(path, "w") { |file| file.write(config) }
     end
 
     # Generate FRR configuration file.
     def gen_config(daemon)
-      config = @configs['all'] || ''
-      config += @configs[daemon] || ''
+      config = @configs["all"] || ""
+      config += @configs[daemon] || ""
 
       # Replace variables.
-      config.gsub!('%(daemon)', daemon)
-      config.gsub!('%(runstatedir)', @runstatedir)
+      config.gsub!("%(daemon)", daemon)
+      config.gsub!("%(runstatedir)", @runstatedir)
 
       save_config(daemon, config)
     end
 
     # Generate FRR configuration files.
     def gen_configs
-      save_config('vtysh', '')
+      save_config("vtysh", "")
       @daemons.each do |daemon|
         gen_config(daemon)
       end
@@ -127,7 +127,7 @@ module FrrCliFuzzer
 
     # Check if a FRR daemon is still alive.
     def daemon_alive?(daemon)
-      `#{@ns.nsenter} ps aux | grep #{daemon} | grep -E -v "defunct|grep"` != ''
+      `#{@ns.nsenter} ps aux | grep #{daemon} | grep -E -v "defunct|grep"` != ""
     end
 
     # Check if a command should be white-list filtered.
@@ -150,7 +150,7 @@ module FrrCliFuzzer
 
     # Prepare command to be used by the CLI fuzzing tester.
     def prepare_command(command)
-      new_command = ''
+      new_command = ""
 
       command.split.each do |word|
         # Custom regexps.
@@ -160,14 +160,14 @@ module FrrCliFuzzer
 
         # Handle intervals.
         if word =~ /(\d+\-\d+)/
-          interval = word.scanf('(%d-%d)')
+          interval = word.scanf("(%d-%d)")
           new_command << interval[1].to_s
         else
           new_command << word
         end
 
         # Append whitespace after each word.
-        new_command << ' '
+        new_command << " "
       end
 
       new_command.rstrip
@@ -185,16 +185,16 @@ module FrrCliFuzzer
           # Check whitelist and blacklist.
           if filter_whitelist(command)
             puts "filtering (whitelist): #{command}"
-            @counters['filtered-whitelist'] += 1
+            @counters["filtered-whitelist"] += 1
             next
           end
           if filter_blacklist(command)
             puts "filtering (blacklist): #{command}"
-            @counters['filtered-blacklist'] += 1
+            @counters["filtered-blacklist"] += 1
             next
           end
 
-          @counters['non-filtered-cmds'] += 1
+          @counters["non-filtered-cmds"] += 1
 
           commands.push("vtysh #{hierarchy} -c \"#{prepare_command(command)}\"")
         end
@@ -208,7 +208,7 @@ module FrrCliFuzzer
     def send_command(command)
       puts "testing: #{command}"
 
-      File.open("#{@runstatedir}/vtysh.stdout", 'a') { |f| f.puts command }
+      File.open("#{@runstatedir}/vtysh.stdout", "a") { |f| f.puts command }
       Kernel.system("#{@ns.nsenter} #{command}",
                     out: ["#{@runstatedir}/vtysh.stdout", "a"],
                     err: ["#{@runstatedir}/vtysh.stderr", "a"])
@@ -231,9 +231,9 @@ module FrrCliFuzzer
     def log_segfault(daemon, command)
       msg = "#{daemon} aborted: #{command}"
       puts msg
-      File.open("#{@runstatedir}/segfaults.txt", 'a') { |f| f.puts msg }
+      File.open("#{@runstatedir}/segfaults.txt", "a") { |f| f.puts msg }
 
-      @counters['segfaults'] += 1
+      @counters["segfaults"] += 1
       @segfaults[msg] = @segfaults[msg].to_i + 1
     end
 
@@ -250,7 +250,7 @@ module FrrCliFuzzer
 
         # Iterate over all commands.
         commands.each do |command|
-          @counters['tested-cmds'] += 1
+          @counters["tested-cmds"] += 1
           send_command(command)
 
           # Check if all daemons are still alive.

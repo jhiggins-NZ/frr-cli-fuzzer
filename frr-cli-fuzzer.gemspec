@@ -1,6 +1,5 @@
-# coding: utf-8
-$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
-require 'frr-cli-fuzzer/version'
+$LOAD_PATH.unshift File.expand_path("lib", __dir__)
+require "frr-cli-fuzzer/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "frr-cli-fuzzer"
@@ -8,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Renato Westphal"]
   spec.email         = ["renato@opensourcerouting.org"]
 
-  spec.summary       = %q{FRR CLI fuzzer.}
+  spec.summary       = "FRR CLI fuzzer."
   spec.homepage      = "https://github.com/rwestphal/frr-cli-fuzzer"
   spec.license       = "MIT"
 

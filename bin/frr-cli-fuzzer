@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 $VERBOSE = true
 
-require 'yaml'
-require_relative '../lib/frr-cli-fuzzer.rb'
+require "yaml"
+require_relative "../lib/frr-cli-fuzzer.rb"
 
 # Signal handler.
-trap('INT') do
+trap("INT") do
   FrrCliFuzzer.print_results
   exit(0)
 end
@@ -26,17 +26,17 @@ rescue SystemCallError, Psych::SyntaxError, ArgumentError => e
   exit(1)
 end
 
-# Start fuzzer and print the results when we're done.
-FrrCliFuzzer.init(iterations: config.dig('fuzzer', 'iterations'),
-                  random_order: config.dig('fuzzer', 'random-order'),
-                  runstatedir: config.dig('fuzzer', 'runstatedir'),
-                  frr_build_parameters: config['frr-build-parameters'],
-                  daemons: config['daemons'],
-                  configs: config['configs'],
-                  nodes: config['nodes'],
-                  regexps: config['regexps'],
-                  whitelist: config['whitelist'],
-                  blacklist: config['blacklist'])
+# Start fuzzer and print the results when we"re done.
+FrrCliFuzzer.init(iterations: config.dig("fuzzer", "iterations"),
+                  random_order: config.dig("fuzzer", "random-order"),
+                  runstatedir: config.dig("fuzzer", "runstatedir"),
+                  frr_build_parameters: config["frr-build-parameters"],
+                  daemons: config["daemons"],
+                  configs: config["configs"],
+                  nodes: config["nodes"],
+                  regexps: config["regexps"],
+                  whitelist: config["whitelist"],
+                  blacklist: config["blacklist"])
 FrrCliFuzzer.gen_configs
 FrrCliFuzzer.start_daemons
 FrrCliFuzzer.test_fuzzing
