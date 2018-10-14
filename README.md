@@ -55,6 +55,11 @@ It's recommend to build FRR with compiler optimizations (e.g. `-O2`) to allow th
 If desired, it's possible to run multiple instances of the CLI fuzzer at the same time.
 For that, each instance must use a different configuration file, and the `runstatedir` parameter (under the `fuzzer` section) must be different among all running instances to separate their running state data.
 
+To run the CLI fuzzer for a specific amount of time, use the `timeout` command. Example:
+```
+# timeout --signal=INT 12h frr-cli-fuzzer config.yml
+```
+
 ## Core Dumps
 
 It's suggested to enable the generation of core dumps to make it easier to debug the segfaults triggered by the CLI fuzzer. This can be done by following the steps below:
