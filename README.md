@@ -32,18 +32,19 @@ Edit [config.yml](config.yml) to configure the test parameters. Run the CLI fuzz
 Once the tests complete, the results are displayed in the standard output. Example:
 ```
 results:
-- non-filtered commands: 5708
+- non-filtered commands: 197
 - whitelist filtered commands: 0
-- blacklist filtered commands: 62881
-- tested commands: 22458
-- segfaults detected: 10
-    (x4) ripd aborted: vtysh -c "configure terminal" -c "no router rip"
-    (x3) ospfd aborted: vtysh -c "configure terminal" -c "router ospf" -c "no segment-routing prefix 1.1.1.1/32"
-    (x3) ospfd aborted: vtysh -c "configure terminal" -c "router ospf" -c "no segment-routing prefix 1.1.1.1/32 index 65535 no-php-flag"
+- blacklist filtered commands: 11
+- tested commands: 426
+- segfaults detected: 5
+    (x3) ripd aborted: vtysh -c "configure terminal" -c "router rip" -c "allow-ecmp"
+      PIDs: 7 342 686
+    (x2) ripd aborted: vtysh -c "configure terminal" -c "router rip" -c "no allow-ecmp"
+      PIDs: 225 547
 ```
 
 The `runstatedir` (_/tmp/frr-cli-fuzzer/_ by default) directory will contain the following files:
-* _segfaults.txt_: log of the detected segmentation faults (use `sort segfaults.txt | uniq` to filter out duplicates).
+* _segfaults.txt_: log of the detected segmentation faults.
 * _*.log_: log files of the FRR daemons.
 * _*.stdout_: capture of the standard output of the FRR daemons.
 * _*.stderr_: capture of the standard error of the FRR daemons.
@@ -71,7 +72,7 @@ It's suggested to enable the generation of core dumps to make it easier to debug
 
 * Edit _/etc/sysctl.conf_:
 ```
-kernel.core_pattern = /var/crash/core-%e-%s-%u-%g-%p-%t
+kernel.core_pattern = /var/crash/core-%e-signal-%s-pid-%p-ts-%t
 fs.suid_dumpable = 1
 ```
 

@@ -32,7 +32,8 @@ module FrrCliFuzzer
       @frr["localstatedir"] ||= DFLT_FRR_LOCALSTATE_DIR
       @frr["user"] ||= DFLT_FRR_USER
       @frr["group"] ||= DFLT_FRR_GROUP
-      @daemons = daemons || []
+      daemons ||= []
+      @daemons = Hash[daemons.collect { |daemon| [daemon, nil] }]
       @configs = configs || []
       @nodes = nodes || []
       @regexps = regexps || []
@@ -101,7 +102,7 @@ module FrrCliFuzzer
     # Generate FRR configuration files.
     def gen_configs
       save_config("vtysh", "")
-      @daemons.each do |daemon|
+      @daemons.keys.each do |daemon|
         gen_config(daemon)
       end
     end
@@ -112,15 +113,19 @@ module FrrCliFuzzer
       FileUtils.rm_f("#{@runstatedir}/#{@frr['localstatedir']}/#{daemon}.pid")
 
       # Spawn new process.
-      pid = Process.spawn("#{@ns.nsenter} #{daemon} --log=stdout",
+      pid = Process.spawn("#{@ns.nsenter} #{daemon} --log=stdout -d",
                           out: "#{@runstatedir}/#{daemon}.stdout",
                           err: "#{@runstatedir}/#{daemon}.stderr")
       Process.detach(pid)
+
+      # Obtain the PID of the daemon as seen in the PID namespace where
+      # it resides.
+      @daemons[daemon] = `#{@ns.nsenter} pidof -s #{daemon}`.rstrip
     end
 
     # Start all FRR daemons.
     def start_daemons
-      @daemons.each do |daemon|
+      @daemons.keys.each do |daemon|
         start_daemon(daemon)
       end
     end
@@ -222,19 +227,27 @@ module FrrCliFuzzer
       puts "- blacklist filtered commands: #{@counters['filtered-blacklist']}"
       puts "- tested commands: #{@counters['tested-cmds']}"
       puts "- segfaults detected: #{@counters['segfaults']}"
-      @segfaults.each_pair do |msg, count|
-        puts "    (x#{count}) #{msg}"
+      @segfaults.each_pair do |msg, pids|
+        puts "    (x#{pids.size}) #{msg}"
+        print "      PIDs:"
+        pids.each { |pid| print " #{pid}" }
+        puts ""
       end
     end
 
     # Log a segfault to both the standard output and to the fuzzer output file.
     def log_segfault(daemon, command)
       msg = "#{daemon} aborted: #{command}"
+      pid = @daemons[daemon]
+
+      @counters["segfaults"] += 1
+      @segfaults[msg] ||= []
+      @segfaults[msg].push(pid)
+
+      msg << " (PID: #{pid})"
       puts msg
       File.open("#{@runstatedir}/segfaults.txt", "a") { |f| f.puts msg }
 
-      @counters["segfaults"] += 1
-      @segfaults[msg] = @segfaults[msg].to_i + 1
     end
 
     # Start fuzzing tests.
@@ -254,7 +267,7 @@ module FrrCliFuzzer
           send_command(command)
 
           # Check if all daemons are still alive.
-          @daemons.each do |daemon|
+          @daemons.keys.each do |daemon|
             next if daemon_alive?(daemon)
 
             log_segfault(daemon, command)
