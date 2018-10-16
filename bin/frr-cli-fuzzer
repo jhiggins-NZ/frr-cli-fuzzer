@@ -35,8 +35,8 @@ FrrCliFuzzer.init(iterations: config.dig("fuzzer", "iterations"),
                   configs: config["configs"],
                   nodes: config["nodes"],
                   regexps: config["regexps"],
-                  whitelist: config["whitelist"],
-                  blacklist: config["blacklist"])
+                  global_whitelist: config["global_whitelist"],
+                  global_blacklist: config["global_blacklist"])
 FrrCliFuzzer.gen_configs
 FrrCliFuzzer.start_daemons
 FrrCliFuzzer.test_fuzzing

@@ -21,8 +21,8 @@ module FrrCliFuzzer
              configs: nil,
              nodes: nil,
              regexps: nil,
-             whitelist: nil,
-             blacklist: nil)
+             global_whitelist: nil,
+             global_blacklist: nil)
       # Load configuration and default values if necessary.
       @iterations = iterations || DFLT_ITERATIONS
       @random_order = random_order || false
@@ -37,8 +37,8 @@ module FrrCliFuzzer
       @configs = configs || []
       @nodes = nodes || []
       @regexps = regexps || []
-      @whitelist = whitelist || []
-      @blacklist = blacklist || []
+      @global_whitelist = global_whitelist || []
+      @global_blacklist = global_blacklist || []
 
       # Initialize counters.
       @counters = {}
@@ -130,18 +130,22 @@ module FrrCliFuzzer
     end
 
     # Check if a command should be white-list filtered.
-    def filter_whitelist(command)
-      return false if @whitelist.empty?
+    def filter_whitelist(command, whitelist)
+      whitelist += @global_whitelist
 
-      @whitelist.each do |regexp|
+      return false if whitelist.empty?
+
+      whitelist.each do |regexp|
         return false if command =~ /#{regexp}/
       end
       true
     end
 
     # Check if a command should be black-list filtered.
-    def filter_blacklist(command)
-      @blacklist.each do |regexp|
+    def filter_blacklist(command, blacklist)
+      blacklist += @global_blacklist
+
+      blacklist.each do |regexp|
         return true if command =~ /#{regexp}/
       end
       false
@@ -176,18 +180,22 @@ module FrrCliFuzzer
     def prepare_commmands
       commands = []
 
-      @nodes.each do |hierarchy|
+      @nodes.each do |node|
+        hierarchy = node["hierarchy"]
+        whitelist = node["whitelist"] || []
+        blacklist = node["blacklist"] || []
+
         permutations = `#{@ns.nsenter} vtysh #{hierarchy} -c \"list permutations\"`
         permutations.each_line do |command|
           command = command.strip
 
           # Check whitelist and blacklist.
-          if filter_whitelist(command)
+          if filter_whitelist(command, whitelist)
             puts "filtering (whitelist): #{command}"
             @counters["filtered-whitelist"] += 1
             next
           end
-          if filter_blacklist(command)
+          if filter_blacklist(command, blacklist)
             puts "filtering (blacklist): #{command}"
             @counters["filtered-blacklist"] += 1
             next

@@ -60,11 +60,11 @@ regexps:
   BANDWIDTH: "1000"
   PERCENTAGE: "50"
 
-whitelist:
+global_whitelist:
   #- ^show (ip|ipv6)
   #- redistribute
 
-blacklist:
+global_blacklist:
   - output file
   - ^write
   - ^copy
@@ -73,62 +73,196 @@ blacklist:
   - ^exit
   - ^quit
   - ^end
-  - ^(no )?log
-  - ^(no )?(ip|ipv6) route
-  - ^show (ip|ipv6) (route|fib)
-  - ^no router bgp
-  - ^no neighbor (A.B.C.D|X:X::X:X|WORD)$
-  - ^no neighbor (A.B.C.D|X:X::X:X|WORD) remote-as
-  - ^sharp install
-  #- ospf
   #- ^(no )?debug
 
 nodes:
-  - ""
-  - -c "configure terminal"
-  - -c "configure terminal" -c "interface eth99"
-  - -c "configure terminal" -c "interface eth99" -c "link-params"
-  - -c "configure terminal" -c "route-map RMAP permit 1"
-  - -c "configure terminal" -c "router bgp 1"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 unicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 multicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 vpn"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 labeled-unicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 flowspec"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 unicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 multicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 vpn"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 labeled-unicast"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 flowspec"
-  - -c "configure terminal" -c "router bgp 1" -c "address-family l2vpn evpn"
-  - -c "configure terminal" -c "router bgp 1" -c "vnc defaults"
-  - -c "configure terminal" -c "router bgp 1" -c "vnc nve-group NAME"
-  - -c "configure terminal" -c "router bgp 1" -c "vnc l2-group NAME"
-  - -c "configure terminal" -c "router bgp 1" -c "vrf-policy NAME"
-  - -c "configure terminal" -c "key chain WORD"
-  - -c "configure terminal" -c "key chain WORD" -c "key 255"
-  - -c "configure terminal" -c "router babel"
-  - -c "configure terminal" -c "router ospf"
-  - -c "configure terminal" -c "router ospf6"
-  - -c "configure terminal" -c "router isis 1"
-  - -c "configure terminal" -c "router openfabric 1"
-  - -c "configure terminal" -c "router rip"
-  - -c "configure terminal" -c "router ripng"
-  - -c "configure terminal" -c "router eigrp 1"
-  - -c "configure terminal" -c "mpls ldp"
-  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv4"
-  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv4" -c "interface eth99"
-  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv6"
-  - -c "configure terminal" -c "mpls ldp" -c "address-family ipv6" -c "interface eth99"
-  - -c "configure terminal" -c "l2vpn WORD type vpls"
-  - -c "configure terminal" -c "l2vpn WORD type vpls" -c "member pseudowire mpw0"
-  - -c "configure terminal" -c "line vty"
-  - -c "configure terminal" -c "logical-router 1 ns /var/run/netns/ns1"
-  - -c "configure terminal" -c "vrf RED"
-  - -c "configure terminal" -c "nexthop-group NHGROUP"
-  - -c "configure terminal" -c "pbr-map WORD seq 100"
-  #- -c "configure terminal" -c "bfd"
-  #- -c "configure terminal" -c "bfd" -c "peer 1.1.1.1"
+  - hierarchy: -c ""
+    whitelist:
+    blacklist:
+      - ^show (ip|ipv6) (route|fib)
+      - ^sharp install
+
+  - hierarchy: -c "configure terminal"
+    whitelist:
+    blacklist:
+      - ^(no )?log
+      - ^(no )?(ip|ipv6) route
+      - ^no router bgp
+
+  - hierarchy: -c "configure terminal" -c "interface eth99"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "interface eth99" -c "link-params"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "route-map RMAP permit 1"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1"
+    whitelist:
+    blacklist:
+      - ^no neighbor (A.B.C.D|X:X::X:X|WORD)$
+      - ^no neighbor (A.B.C.D|X:X::X:X|WORD) remote-as
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 unicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 multicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 vpn"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 labeled-unicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv4 flowspec"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 unicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 multicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 vpn"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 labeled-unicast"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family ipv6 flowspec"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "address-family l2vpn evpn"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "vnc defaults"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "vnc nve-group NAME"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "vnc l2-group NAME"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router bgp 1" -c "vrf-policy NAME"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "key chain WORD"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "key chain WORD" -c "key 255"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router babel"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router ospf"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router ospf6"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router isis 1"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router openfabric 1"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router rip"
+    whitelist:
+    blacklist:
+      - redistribute
+
+  - hierarchy: -c "configure terminal" -c "router ripng"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "router eigrp 1"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "mpls ldp"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "mpls ldp" -c "address-family ipv4"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "mpls ldp" -c "address-family ipv4" -c "interface eth99"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "mpls ldp" -c "address-family ipv6"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "mpls ldp" -c "address-family ipv6" -c "interface eth99"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "l2vpn WORD type vpls"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "l2vpn WORD type vpls" -c "member pseudowire mpw0"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "line vty"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "logical-router 1 ns /var/run/netns/ns1"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "vrf RED"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "nexthop-group NHGROUP"
+    whitelist:
+    blacklist:
+
+  - hierarchy: -c "configure terminal" -c "pbr-map WORD seq 100"
+    whitelist:
+    blacklist:
+
+  #- hierarchy: -c "configure terminal" -c "bfd"
+  #  whitelist:
+  #  blacklist:
+
+  #- hierarchy: -c "configure terminal" -c "bfd" -c "peer 1.1.1.1"
+  #  whitelist:
+  #  blacklist:
 
 configs:
   all: |
