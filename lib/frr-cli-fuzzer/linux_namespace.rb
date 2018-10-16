@@ -1,5 +1,15 @@
 module FrrCliFuzzer
   class LinuxNamespace
+    def initialize
+      fork_and_unshare do
+        # This is the init process of the new PID namespace. We need to reap
+        # the zombies.
+        trap(:CHLD) { Process.wait }
+        trap(:INT, :IGNORE)
+        sleep
+      end
+    end
+
     # Create a child process running on a separate network and mount namespace.
     def fork_and_unshare
       io_in, io_out = IO.pipe

@@ -60,12 +60,6 @@ module FrrCliFuzzer
 
       # Create a new process on a new pid, mount and network namespace.
       @ns = LinuxNamespace.new
-      @ns.fork_and_unshare do
-        # This is the init process of this fuzzer. We need to reap the zombies.
-        trap(:CHLD) { Process.wait }
-        trap(:INT, :IGNORE)
-        sleep
-      end
 
       # Bind mount FRR directories.
       bind_mount(@frr["sysconfdir"], @frr["user"], @frr["group"])
