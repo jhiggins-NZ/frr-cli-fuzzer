@@ -88,7 +88,7 @@ module FrrCliFuzzer
 
       # Replace variables.
       config.gsub!("%(daemon)", daemon)
-      config.gsub!("%(runstatedir)", @runstatedir)
+      config.gsub!("%(logfile)", "#{@runstatedir}/#{daemon}.log")
 
       save_config(daemon, config)
     end
@@ -207,7 +207,9 @@ module FrrCliFuzzer
     def send_command(command)
       puts "testing: #{command}"
 
-      File.open("#{@runstatedir}/vtysh.stdout", "a") { |f| f.puts command }
+      ["stdout", "stderr"].each do |suffix|
+        File.open("#{@runstatedir}/vtysh.#{suffix}", "a") { |f| f.puts command }
+      end
       Kernel.system("#{@ns.nsenter} #{command}",
                     out: ["#{@runstatedir}/vtysh.stdout", "a"],
                     err: ["#{@runstatedir}/vtysh.stderr", "a"])
@@ -237,11 +239,19 @@ module FrrCliFuzzer
       @counters["segfaults"] += 1
       @segfaults[msg] ||= []
       @segfaults[msg].push(pid)
-
       msg << " (PID: #{pid})"
       puts msg
       File.open("#{@runstatedir}/segfaults.txt", "a") { |f| f.puts msg }
+    end
 
+    # Append PID of the aborted daemon to its log files.
+    def rename_log_files(daemon)
+      pid = @daemons[daemon]
+
+      ["log", "stdout", "stderr"].each do |suffix|
+        log_file = "#{@runstatedir}/#{daemon}.#{suffix}"
+        FileUtils.mv(log_file, "#{log_file}.#{pid}")
+      end
     end
 
     # Start fuzzing tests.
@@ -265,6 +275,7 @@ module FrrCliFuzzer
             next if daemon_alive?(daemon)
 
             log_segfault(daemon, command)
+            rename_log_files(daemon)
             start_daemon(daemon)
           end
         end

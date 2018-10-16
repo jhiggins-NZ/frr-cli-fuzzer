@@ -133,7 +133,7 @@ nodes:
 configs:
   all: |
     hostname %(daemon)
-    log file %(runstatedir)/%(daemon).log
+    log file %(logfile)
     log commands
     !
     debug northbound
