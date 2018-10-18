@@ -45,9 +45,9 @@ results:
 
 The `runstatedir` (_/tmp/frr-cli-fuzzer/_ by default) directory will contain the following files:
 * _segfaults.txt_: log of the detected segmentation faults.
-* _*.log.<PID>_: log files of the FRR daemons.
-* _*.stdout.<PID>_: capture of the standard output of the FRR daemons.
-* _*.stderr.<PID>_: capture of the standard error of the FRR daemons.
+* _*.log.\<PID>_: log files of the FRR daemons.
+* _*.stdout.\<PID>_: capture of the standard output of the FRR daemons.
+* _*.stderr.\<PID>_: capture of the standard error of the FRR daemons.
 * _vtysh.stdout_: capture of the standard output of vtysh.
 * _vtysh.stderr_: capture of the standard error of vtysh.
 
