@@ -32,7 +32,7 @@ daemons:
   - ldpd
   - nhrpd
   - babeld
-  #- bfdd
+  - bfdd
   - pbrd
   - staticd
   - sharpd
@@ -198,7 +198,6 @@ nodes:
   - hierarchy: -c "configure terminal" -c "router rip"
     whitelist:
     blacklist:
-      - redistribute
 
   - hierarchy: -c "configure terminal" -c "router ripng"
     whitelist:
@@ -256,13 +255,13 @@ nodes:
     whitelist:
     blacklist:
 
-  #- hierarchy: -c "configure terminal" -c "bfd"
-  #  whitelist:
-  #  blacklist:
+  - hierarchy: -c "configure terminal" -c "bfd"
+    whitelist:
+    blacklist:
 
-  #- hierarchy: -c "configure terminal" -c "bfd" -c "peer 1.1.1.1"
-  #  whitelist:
-  #  blacklist:
+  - hierarchy: -c "configure terminal" -c "bfd" -c "peer 1.1.1.1"
+    whitelist:
+    blacklist:
 
 configs:
   all: |
@@ -272,10 +271,12 @@ configs:
     !
     debug northbound
     !
+
   zebra: |
     route-map WORD permit 10
     vrf WORD
     !
+
   bgpd: |
     route-map WORD permit 10
     ip prefix-list WORD permit any
@@ -296,33 +297,39 @@ configs:
     !
     router bgp 2 view VIEWVRFNAME
     !
+
   ospfd: |
     route-map WORD permit 10
     !
     router ospf
     !
+
   ospf6d: |
     route-map WORD permit 10
     !
     router ospf6
     !
+
   isisd: |
     route-map WORD permit 10
     !
+
   fabricd: |
     route-map WORD permit 10
     !
+
   ripd: |
     route-map WORD permit 10
     ip prefix-list WORD permit any
     access-list WORD permit any
     !
-    !key chain WORD
-    ! key 2147483647
+    key chain WORD
+     key 2147483647
     !
     router rip
      distribute-list WORD in eth99
     !
+
   ripngd: |
     route-map WORD permit 10
     ipv6 prefix-list WORD permit any
@@ -331,21 +338,31 @@ configs:
     router ripng
      distribute-list WORD in eth99
     !
+
   eigrpd: |
     route-map WORD permit 10
     !
+
   pimd: |
     route-map WORD permit 10
     vrf WORD
     !
+
   ldpd: |
+
   nhrpd: |
+
   babeld: |
+
   bfdd: |
+    log syslog informational
+
   pbrd: |
+
   staticd: |
     vrf WORD
     !
+
   sharpd: |
     route-map WORD permit 10
     !
